@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import random
+from tqdm import tqdm
 
 
 class Maze:
@@ -66,8 +67,11 @@ class Agent:
 
     def monte_carlo_prediction(self):
         # de functie bevat het algoritme zoals hij in de pseudocode is beschreven
-        for episode_num in range(100000):
-            print(episode_num)
+        print("Old:")
+        self.policy.print_policy()
+        print()
+        for episode_num in tqdm(range(100000)):
+            # print(episode_num)
             episode = []
             self.location = random.choice(list(self.maze.grid.values()))
             while not self.location.finished:
@@ -81,15 +85,18 @@ class Agent:
                     if step not in episode[0:index]:
                         step.g.append(G)
                         length = len(step.g)
-                        step.g_mean = (step.g_mean * length-1 + G)/length
+                        step.g_mean = (step.g_mean * (length-1) + G)/length
                         step.value = step.g_mean
         # code om de values te visualiseren, de policy te maken, en de policy te visualiseren
         printgrid = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
         for key in self.maze.grid.keys():
-            printgrid[key[1]][key[0]] = self.maze.grid[key].value
-        [print(i) for i in printgrid]
+            printgrid[key[1]][key[0]] = round(self.maze.grid[key].value, 2)
         print()
+        print("Values:")
+        [print(i) for i in printgrid]
         self.policy.create_policy()
+        print()
+        print("New:")
         self.policy.print_policy()
 
 

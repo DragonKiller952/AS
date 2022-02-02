@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import random
+from tqdm import tqdm
 
 
 class Maze:
@@ -65,8 +66,11 @@ class Agent:
     def temporal_difference_learning(self):
         # de functie bevat het algoritme zoals hij in de pseudocode is beschreven
         learning_rate = 0.1
-        for episode_num in range(100000):
-            print(episode_num)
+        print("Old:")
+        self.policy.print_policy()
+        print()
+        for episode_num in tqdm(range(100000)):
+            # print(episode_num)
             self.location = random.choice(list(self.maze.grid.values()))
             while not self.location.finished:
                 location = self.location
@@ -76,10 +80,13 @@ class Agent:
                 self.policy.create_policy()
         # code om de values te visualiseren, en de policy te visualiseren
         printgrid = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+        print()
+        print("Values:")
         for key in self.maze.grid.keys():
-            printgrid[key[1]][key[0]] = self.maze.grid[key].value
+            printgrid[key[1]][key[0]] = round(self.maze.grid[key].value, 2)
         [print(i) for i in printgrid]
         print()
+        print("New:")
         self.policy.print_policy()
 
 

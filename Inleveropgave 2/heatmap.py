@@ -8,13 +8,13 @@ def create_demo_data(M, N, data):
     # M columns and N rows
 
     valuesN = np.zeros(shape=(M, N), dtype=np.float64)
-    valuesN[tuple(zip(*data.keys()))] = list([i['↑'] for i in data.values()])
+    valuesN[tuple(zip(*data.keys()))] = list([i.Q['↑'] for i in data.values()])
     valuesE = np.zeros(shape=(M, N), dtype=np.float64)
-    valuesE[tuple(zip(*data.keys()))] = list([i['→'] for i in data.values()])
+    valuesE[tuple(zip(*data.keys()))] = list([i.Q['→'] for i in data.values()])
     valuesS = np.zeros(shape=(M, N), dtype=np.float64)
-    valuesS[tuple(zip(*data.keys()))] = list([i['↓'] for i in data.values()])
+    valuesS[tuple(zip(*data.keys()))] = list([i.Q['↓'] for i in data.values()])
     valuesW = np.zeros(shape=(M, N), dtype=np.float64)
-    valuesW[tuple(zip(*data.keys()))] = list([i['←'] for i in data.values()])
+    valuesW[tuple(zip(*data.keys()))] = list([i.Q['←'] for i in data.values()])
     return [valuesN, valuesE, valuesS, valuesW]
 
 def triangulation_for_triheatmap(M, N):

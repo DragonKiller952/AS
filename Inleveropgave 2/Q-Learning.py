@@ -12,25 +12,15 @@ class Maze:
         for y in range(4):
             for x in range(4):
                 if [x, y] == [3, 0]:
-                    self.grid[x, y] = State(x=x, y=y, reward=40, g={'↑': [], '→': [], '↓': [], '←': []},
-                                            g_mean={'↑': 0, '→': 0, '↓': 0, '←': 0},
-                                            Q={'↑': 0, '→': 0, '↓': 0, '←': 0}, finished=True)
+                    self.grid[x, y] = State(x=x, y=y, reward=40, Q={'↑': 0, '→': 0, '↓': 0, '←': 0}, finished=True)
                 elif [x, y] == [2, 1] or [x, y] == [3, 1]:
-                    self.grid[x, y] = State(x=x, y=y, reward=-10, g={'↑': [], '→': [], '↓': [], '←': []},
-                                            g_mean={'↑': 0, '→': 0, '↓': 0, '←': 0},
-                                            Q={'↑': 0, '→': 0, '↓': 0, '←': 0}, finished=False)
+                    self.grid[x, y] = State(x=x, y=y, reward=-10, Q={'↑': 0, '→': 0, '↓': 0, '←': 0}, finished=False)
                 elif [x, y] == [0, 3]:
-                    self.grid[x, y] = State(x=x, y=y, reward=10, g={'↑': [], '→': [], '↓': [], '←': []},
-                                            g_mean={'↑': 0, '→': 0, '↓': 0, '←': 0},
-                                            Q={'↑': 0, '→': 0, '↓': 0, '←': 0}, finished=True)
+                    self.grid[x, y] = State(x=x, y=y, reward=10, Q={'↑': 0, '→': 0, '↓': 0, '←': 0}, finished=True)
                 elif [x, y] == [1, 3]:
-                    self.grid[x, y] = State(x=x, y=y, reward=-2, g={'↑': [], '→': [], '↓': [], '←': []},
-                                            g_mean={'↑': 0, '→': 0, '↓': 0, '←': 0},
-                                            Q={'↑': 0, '→': 0, '↓': 0, '←': 0}, finished=False)
+                    self.grid[x, y] = State(x=x, y=y, reward=-2, Q={'↑': 0, '→': 0, '↓': 0, '←': 0}, finished=False)
                 else:
-                    self.grid[x, y] = State(x=x, y=y, reward=-1, g={'↑': [], '→': [], '↓': [], '←': []},
-                                            g_mean={'↑': 0, '→': 0, '↓': 0, '←': 0},
-                                            Q={'↑': 0, '→': 0, '↓': 0, '←': 0}, finished=False)
+                    self.grid[x, y] = State(x=x, y=y, reward=-1, Q={'↑': 0, '→': 0, '↓': 0, '←': 0}, finished=False)
         self.actions = {'↑': (0, -1), '→': (1, 0), '↓': (0, 1), '←': (-1, 0)}
 
     def step(self, state, action):
@@ -50,8 +40,6 @@ class State:
     x: int
     y: int
     reward: int
-    g: dict
-    g_mean: dict
     Q: dict
     finished: bool
 
@@ -61,13 +49,13 @@ class Agent:
         # initialiseerd de maze en de policy, en runt het algoritme
         self.maze = Maze()
         self.location = self.maze.grid[start]
-        self.discount = 1
+        self.discount = 0.9
         self.epsilon = 0.1
         self.policy = Policy(self.epsilon)
         self.policy.state_grid = self.maze.grid
-        self.monte_carlo_control()
+        self.Q_learning()
 
-    def step(self, move= None):
+    def step(self, move=None):
         # de step functie verplaats de agent in de maze
         # aan de hand van de huidige policy
         if not move:
@@ -79,30 +67,27 @@ class Agent:
         # choice vraagt de action voor de huidige state op uit de policy
         return self.policy.select_action(state)
 
-    def monte_carlo_control(self):
+    def Q_learning(self):
         # de functie bevat het algoritme zoals hij in de pseudocode is beschreven
+        learning_rate = 0.1
         for episode_num in tqdm(range(100000)):
             # print(episode_num)
-            episode = []
             self.location = random.choice(list(self.maze.grid.values()))
+            location = self.location
             while not self.location.finished:
                 action = self.choice(self.location)
-                episode.append({'S': self.location, 'A': action})
                 self.step(action)
-            episode.append({'S': self.location})
-            G = 0
-            for index, step in reversed(list(enumerate(episode))):
-                if index != len(episode) - 1:
-                    state = step['S']
-                    action = step['A']
-                    # print(step)
-                    G = self.discount * G + episode[index + 1]['S'].reward
-                    if step not in episode[0:index]:
-                        state.g[action].append(G)
-                        length = len(state.g[action])
-                        state.g_mean[action] = (state.g_mean[action] * (length - 1) + G) / length
-                        state.Q[action] = state.g_mean[action]
-                        self.policy.create_state_policy(state, self.epsilon)
+                newlocation = self.location
+                max_value = max(newlocation.Q.values())
+                max_key = [key for key, value in newlocation.Q.items() if value == max_value][-1]
+                newaction = max_key
+                reward = self.location.reward
+                location.Q[action] += learning_rate * (reward +
+                                                       (self.discount * newlocation.Q[newaction]) -
+                                                       location.Q[action])
+                self.policy.create_state_policy(location, self.epsilon)
+                location = newlocation
+
         # code om de values te visualiseren, en de policy te visualiseren
         printgrid = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
         for key in self.maze.grid.keys():
