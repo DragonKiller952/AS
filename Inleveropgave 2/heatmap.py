@@ -9,12 +9,16 @@ def create_demo_data(M, N, data):
 
     valuesN = np.zeros(shape=(M, N), dtype=np.float64)
     valuesN[tuple(zip(*data.keys()))] = list([i.Q['↑'] for i in data.values()])
+    valuesN = np.rot90(np.fliplr(valuesN))
     valuesE = np.zeros(shape=(M, N), dtype=np.float64)
     valuesE[tuple(zip(*data.keys()))] = list([i.Q['→'] for i in data.values()])
+    valuesE = np.rot90(np.fliplr(valuesE))
     valuesS = np.zeros(shape=(M, N), dtype=np.float64)
     valuesS[tuple(zip(*data.keys()))] = list([i.Q['↓'] for i in data.values()])
+    valuesS = np.rot90(np.fliplr(valuesS))
     valuesW = np.zeros(shape=(M, N), dtype=np.float64)
     valuesW[tuple(zip(*data.keys()))] = list([i.Q['←'] for i in data.values()])
+    valuesW = np.rot90(np.fliplr(valuesW))
     return [valuesN, valuesE, valuesS, valuesW]
 
 def triangulation_for_triheatmap(M, N):
